@@ -1,0 +1,55 @@
+name: Automate Preprocessing
+
+# Trigger: Jalan setiap kali ada push ke branch main
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch: # Agar bisa dijalankan manual tombol 'Run'
+
+permissions:
+  contents: write # Izin wajib agar bot bisa melakukan git push balik
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Ambil kode dari repository
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # 2. Siapkan Python
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
+
+      # 3. Install dependencies (termasuk pandas, nltk, dll)
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      # 4. Jalankan script preprocessing
+      # Masuk ke folder preprocessing dulu, lalu jalankan scriptnya
+      - name: Run preprocessing script
+        run: |
+          cd preprocessing
+          python automate_Luthfiyana.py
+
+      # 5. Commit dan Push hasil (Dataset Bersih) kembali ke Repo
+      - name: Commit and Push Cleaned Data
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+
+          # Add file hasil preprocessing
+          git add preprocessing/spam_cleaned/spam_cleaned.zip
+
+          # Commit (jika ada perubahan)
+          # "|| echo" mencegah error jika tidak ada perubahan data
+          git commit -m "Auto-generated: Update cleaned dataset via GitHub Actions" || echo "No changes to commit"
+
+          # Push kembali ke main
+          git push
