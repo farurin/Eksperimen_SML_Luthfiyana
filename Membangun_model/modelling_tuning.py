@@ -49,6 +49,9 @@ param_grid = {
     'nb__alpha': [0.1, 0.5, 1.0]
 }
 
+# Autologging mlflow
+mlflow.autolog()
+
 print("Memulai Hyperparameter Tuning...")
 with mlflow.start_run(run_name="Advanced Tuning NB"):
     
